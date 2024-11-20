@@ -1,0 +1,6 @@
+<!-- res/drawable/remove_button_border.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#F44336"/> <!-- Purple background -->
+    <stroke android:color="#F44336" android:width="2dp"/> <!-- Purple border -->
+    <corners android:radius="4dp"/> <!-- Rounded corners -->
+</shape>
