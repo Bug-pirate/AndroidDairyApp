@@ -21,7 +21,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -85,27 +93,65 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
-            // Get product details from AdminActivity
             String productName = data.getStringExtra("productName");
-            String productPrice = data.getStringExtra("productPrice");
             String productImagePath = data.getStringExtra("productImagePath");
             String[] weights = data.getStringArrayExtra("weights");
             String[] prices = data.getStringArrayExtra("prices");
 
-            // Save the product to SharedPreferences
-            saveProductToPreferences(productName, productPrice, productImagePath, weights, prices);
+            List<PriceWeightCombination> priceWeightCombinations = new ArrayList<>();
+            for (int i = 0; i < weights.length; i++) {
+                priceWeightCombinations.add(new PriceWeightCombination(weights[i], prices[i]));
+            }
+
+            saveProductToPreferences(productName, productImagePath, priceWeightCombinations);
+
+            // Reload products to update the UI
+            loadProductsFromPreferences();
+        }
+    }
+
+
+
+    // Method to save product to SharedPreferences with weights and prices
+    public void saveProductToPreferences(String productName, String productImagePath, List<PriceWeightCombination> priceWeightCombinations) {
+        SharedPreferences preferences = getSharedPreferences("product_prefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        // Create a new Product object and save the product with price-weight combinations
+        Product product = new Product(productName, productImagePath, priceWeightCombinations);
+
+        // Convert the product to JSON and save
+        Set<String> productJsonSet = new HashSet<>();
+        productJsonSet.add(product.toJson());
+        editor.putStringSet("products_key", productJsonSet);
+        editor.apply();
+    }
+
+
+    // Method to load products from SharedPreferences
+    private void loadProductsFromPreferences() {
+        SharedPreferences preferences = getSharedPreferences("product_prefs", MODE_PRIVATE); // Use the same name
+        Set<String> productJsonSet = preferences.getStringSet("products_key", new HashSet<>());
+
+        LinearLayout productListLayout = findViewById(R.id.productListLayout);
+
+        // Iterate through the saved products
+        for (String productJson : productJsonSet) {
+            Product product = Product.fromJson(productJson);
 
             // Inflate and populate the product card
-            LinearLayout productListLayout = findViewById(R.id.productListLayout);
             View productCard = getLayoutInflater().inflate(R.layout.product_card, productListLayout, false);
 
-            // Set product image safely
+            // Set product image
             ImageView productImage = productCard.findViewById(R.id.productImage);
+            String productImagePath = product.getImageUri();
             if (productImagePath != null && !productImagePath.isEmpty()) {
                 try {
                     Uri imageUri = Uri.parse(productImagePath);
@@ -120,11 +166,21 @@ public class MainActivity extends AppCompatActivity {
 
             // Set product name
             TextView productNameView = productCard.findViewById(R.id.productName);
-            productNameView.setText(productName);
+            productNameView.setText(product.getName());
 
             // Populate dropdowns for weights and prices
             Spinner weightSpinner = productCard.findViewById(R.id.weightSpinner);
             Spinner priceSpinner = productCard.findViewById(R.id.priceSpinner);
+
+            List<PriceWeightCombination> priceWeightCombinations = product.getPriceWeightCombinations();
+            String[] weights = new String[priceWeightCombinations.size()];
+            String[] prices = new String[priceWeightCombinations.size()];
+
+            for (int i = 0; i < priceWeightCombinations.size(); i++) {
+                weights[i] = priceWeightCombinations.get(i).getWeight();
+                prices[i] = priceWeightCombinations.get(i).getPrice();
+            }
+
             ArrayAdapter<String> weightAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, weights);
             ArrayAdapter<String> priceAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, prices);
             weightSpinner.setAdapter(weightAdapter);
@@ -133,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
             // Handle Add to Cart button
             Button addToCartButton = productCard.findViewById(R.id.addToCartButton);
             addToCartButton.setOnClickListener(v -> {
-                Toast.makeText(this, productName + " added to cart!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, product.getName() + " added to cart!", Toast.LENGTH_SHORT).show();
             });
 
             // Add the card to the layout
@@ -141,79 +197,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Method to save product to SharedPreferences
-    private void saveProductToPreferences(String productName, String productPrice, String productImagePath, String[] weights, String[] prices) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-
-        // Create a unique key for each product
-        String key = "product_" + productName + "_" + productPrice;
-
-        // Convert product details to a string representation
-        editor.putString(key + "_name", productName);
-        editor.putString(key + "_price", productPrice);
-        editor.putString(key + "_imagePath", productImagePath);
-
-        // Store weight and price options as JSON-like strings
-        editor.putString(key + "_weights", String.join(",", weights));
-        editor.putString(key + "_prices", String.join(",", prices));
-
-        editor.apply();  // Commit the changes
-    }
-
-    // Method to load products from SharedPreferences
-    private void loadProductsFromPreferences() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        Map<String, ?> allEntries = sharedPreferences.getAll();
-
-        LinearLayout productListLayout = findViewById(R.id.productListLayout);
-
-        // Iterate through the saved products in SharedPreferences
-        for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-            String key = entry.getKey();
-            String value = (String) entry.getValue();
-
-            // If the key indicates a product, process the product details
-            if (key.endsWith("_name")) {
-                String productName = sharedPreferences.getString(key, null);
-                String productPrice = sharedPreferences.getString(key.replace("_name", "_price"), null);
-                String productImagePath = sharedPreferences.getString(key.replace("_name", "_imagePath"), null);
-                String[] weights = sharedPreferences.getString(key.replace("_name", "_weights"), "").split(",");
-                String[] prices = sharedPreferences.getString(key.replace("_name", "_prices"), "").split(",");
-
-                // Inflate and populate the product card (same code as in onActivityResult)
-                View productCard = getLayoutInflater().inflate(R.layout.product_card, productListLayout, false);
-                ImageView productImage = productCard.findViewById(R.id.productImage);
-
-                if (productImagePath != null && !productImagePath.isEmpty()) {
-                    try {
-                        Uri imageUri = Uri.parse(productImagePath);
-                        productImage.setImageURI(imageUri);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        productImage.setImageResource(R.drawable.placeholder); // Fallback image
-                    }
-                } else {
-                    productImage.setImageResource(R.drawable.placeholder); // Fallback image
-                }
-
-                TextView productNameView = productCard.findViewById(R.id.productName);
-                productNameView.setText(productName);
-
-                Spinner weightSpinner = productCard.findViewById(R.id.weightSpinner);
-                Spinner priceSpinner = productCard.findViewById(R.id.priceSpinner);
-                ArrayAdapter<String> weightAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, weights);
-                ArrayAdapter<String> priceAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, prices);
-                weightSpinner.setAdapter(weightAdapter);
-                priceSpinner.setAdapter(priceAdapter);
-
-                Button addToCartButton = productCard.findViewById(R.id.addToCartButton);
-                addToCartButton.setOnClickListener(v -> {
-                    Toast.makeText(this, productName + " added to cart!", Toast.LENGTH_SHORT).show();
-                });
-
-                productListLayout.addView(productCard);
-            }
-        }
-    }
 }

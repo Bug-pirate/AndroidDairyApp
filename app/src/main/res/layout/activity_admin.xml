@@ -107,15 +107,6 @@
                     android:hint="Product Name"
                     android:background="@drawable/rounded_edittext" />
 
-                <EditText
-                    android:id="@+id/productPriceInput"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:padding="12dp"
-                    android:hint="Product Price"
-                    android:background="@drawable/rounded_edittext" />
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -232,7 +223,9 @@
                     android:id="@+id/productListLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical" />
+                    android:orientation="vertical">
+                    <!-- Each product will be added programmatically -->
+                </LinearLayout>
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>

@@ -18,17 +18,20 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class AdminActivity extends AppCompatActivity {
 
     private LinearLayout layoutProductInfo, productListLayout;
     private Button btnAddProduct, btnAddMoreWeightPrice, btnSelectImage, btnHome, btnBilling;
-    private EditText etProductName, etProductPrice, etWeight, etWeightPrice;
+    private EditText etProductName, etDefaultWeight, etDefaultPrice;
     private ImageView productImage;
     private TextView selectedImagePath;
     private String productImagePath = ""; // Placeholder for image path
-    private ArrayList<String> weightList = new ArrayList<>();  // List to hold weights
-    private ArrayList<String> priceList = new ArrayList<>();   // List to hold prices
+    private ArrayList<String> weightList = new ArrayList<>();
+    private ArrayList<String> priceList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,9 +41,8 @@ public class AdminActivity extends AppCompatActivity {
         // Initialize UI elements
         layoutProductInfo = findViewById(R.id.layoutProductInfo);
         etProductName = findViewById(R.id.productNameInput);
-        etProductPrice = findViewById(R.id.productPriceInput);
-        etWeight = findViewById(R.id.productWeightInput);
-        etWeightPrice = findViewById(R.id.productWeightPriceInput);
+        etDefaultWeight = findViewById(R.id.productWeightInput);
+        etDefaultPrice = findViewById(R.id.productWeightPriceInput);
         btnAddProduct = findViewById(R.id.addProductButton);
         btnAddMoreWeightPrice = findViewById(R.id.addMoreWeightPriceButton);
         btnSelectImage = findViewById(R.id.selectImageButton);
@@ -48,92 +50,56 @@ public class AdminActivity extends AppCompatActivity {
         selectedImagePath = findViewById(R.id.selectedImagePath);
         productListLayout = findViewById(R.id.productListLayout);
 
-        // Buttons for navigation
         btnHome = findViewById(R.id.homeButton);
         btnBilling = findViewById(R.id.billingButton);
 
-        // Button to add weight and price input fields dynamically
+        // Add more weight and price combinations dynamically
         btnAddMoreWeightPrice.setOnClickListener(v -> addWeightPriceInput());
 
-        // Button to select image for the product
+        // Select image for the product
         btnSelectImage.setOnClickListener(v -> selectProductImage());
 
-        // Button to add the product to the list
-        btnAddProduct.setOnClickListener(v -> {
-            // Validate the inputs before adding the product
-            if (etProductName.getText().toString().isEmpty() || etProductPrice.getText().toString().isEmpty()) {
-                Toast.makeText(this, "Please fill in product name and price.", Toast.LENGTH_SHORT).show();
-                return;
-            }
+        // Add product to the list
+        btnAddProduct.setOnClickListener(v -> addProduct());
 
-            // Collect weight and price data from the input fields
-            weightList.clear();  // Clear any previous entries
-            priceList.clear();
-
-            // Add weight and price pairs from the dynamically added fields
-            for (int i = 0; i < layoutProductInfo.getChildCount(); i++) {
-                View child = layoutProductInfo.getChildAt(i);
-                if (child instanceof LinearLayout) {
-                    EditText weightEditText = (EditText) child.findViewById(R.id.productWeightInput);
-                    EditText priceEditText = (EditText) child.findViewById(R.id.productWeightPriceInput);
-                    weightList.add(weightEditText.getText().toString());
-                    priceList.add(priceEditText.getText().toString());
-                }
-            }
-
-            // Create an Intent to pass product data back to MainActivity
-            Intent resultIntent = new Intent();
-            resultIntent.putExtra("productName", etProductName.getText().toString());
-            resultIntent.putExtra("productPrice", etProductPrice.getText().toString());
-            resultIntent.putExtra("productImagePath", productImagePath);
-            resultIntent.putExtra("weights", weightList.toArray(new String[0]));
-            resultIntent.putExtra("prices", priceList.toArray(new String[0]));
-            setResult(RESULT_OK, resultIntent);
-
-            // Optionally reset the form fields
-            resetFormFields();
-
-            // Save product to SharedPreferences
-            saveProductToPreferences();
-
-            Toast.makeText(this, "Product Added Successfully!", Toast.LENGTH_SHORT).show();
-            finish(); // Close the AdminActivity and send data back
-        });
-
-        // Button to navigate to Home (MainActivity)
+        // Navigate to Home
         btnHome.setOnClickListener(v -> {
             Intent homeIntent = new Intent(AdminActivity.this, MainActivity.class);
             startActivity(homeIntent);
         });
 
-        // Button to navigate to Billing Activity
+        // Navigate to Billing
         btnBilling.setOnClickListener(v -> {
             Intent billingIntent = new Intent(AdminActivity.this, BillingActivity.class);
             startActivity(billingIntent);
         });
+
+        // Load saved products when AdminActivity is created
+        loadSavedProducts();
     }
 
     private void addWeightPriceInput() {
-        // Dynamically add weight-price pair input fields to layout
+        // Dynamically add a pair of weight and price fields
         LinearLayout weightPriceLayout = new LinearLayout(this);
         weightPriceLayout.setOrientation(LinearLayout.HORIZONTAL);
 
         EditText etNewWeight = new EditText(this);
         etNewWeight.setHint("Weight");
+        etNewWeight.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
         weightPriceLayout.addView(etNewWeight);
 
         EditText etNewPrice = new EditText(this);
         etNewPrice.setHint("Price");
+        etNewPrice.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
         weightPriceLayout.addView(etNewPrice);
 
         layoutProductInfo.addView(weightPriceLayout);
     }
 
     private void selectProductImage() {
-        // Intent to open image picker
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         intent.setType("image/*");
-        startActivityForResult(intent, 1);  // 1 is the request code
+        startActivityForResult(intent, 1); // Request code 1 for image selection
     }
 
     @Override
@@ -141,113 +107,173 @@ public class AdminActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK && requestCode == 1) {
-            Uri selectedImageUri = data.getData();  // Get the selected image URI
-
-            // Set the selected image in the ImageView
+            Uri selectedImageUri = data.getData();
             productImage.setImageURI(selectedImageUri);
-
-            // Hide the TextView (No image selected message)
             selectedImagePath.setVisibility(View.GONE);
-
-            // Optionally, save the URI if needed for future use
-            productImagePath = selectedImageUri.toString();  // Store the image URI if needed
+            productImagePath = selectedImageUri.toString();
         }
     }
 
-    private void saveProductToPreferences() {
-        // Save product details (name, price, image) and weight/price pairs in SharedPreferences
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-
+    private void addProduct() {
         String productName = etProductName.getText().toString();
-        String productPrice = etProductPrice.getText().toString();
 
-        // Save the basic product details
-        editor.putString("product_name", productName);
-        editor.putString("product_price", productPrice);
-        editor.putString("product_image", productImagePath);
-
-        // Save weight and price pairs
-        for (int i = 0; i < weightList.size(); i++) {
-            String weight = weightList.get(i);
-            String price = priceList.get(i);
-            editor.putString("weight_" + i, weight);
-            editor.putString("price_" + i, price);
+        if (productName.isEmpty()) {
+            Toast.makeText(this, "Please fill in the product name.", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        editor.apply();  // Commit the changes to SharedPreferences
+        weightList.clear();
+        priceList.clear();
+
+        // Add the default weight and price inputs
+        String defaultWeight = etDefaultWeight.getText().toString();
+        String defaultPrice = etDefaultPrice.getText().toString();
+
+        if (!defaultWeight.isEmpty() && !defaultPrice.isEmpty()) {
+            weightList.add(defaultWeight);
+            priceList.add(defaultPrice);
+        }
+
+        // Add dynamically added weight and price inputs
+        for (int i = 0; i < layoutProductInfo.getChildCount(); i++) {
+            View child = layoutProductInfo.getChildAt(i);
+            if (child instanceof LinearLayout) {
+                LinearLayout weightPriceLayout = (LinearLayout) child;
+                EditText etWeight = (EditText) weightPriceLayout.getChildAt(0);
+                EditText etPrice = (EditText) weightPriceLayout.getChildAt(1);
+
+                String weight = etWeight.getText().toString();
+                String price = etPrice.getText().toString();
+
+                if (!weight.isEmpty() && !price.isEmpty()) {
+                    weightList.add(weight);
+                    priceList.add(price);
+                }
+            }
+        }
+
+        if (weightList.isEmpty() || priceList.isEmpty()) {
+            Toast.makeText(this, "Please add at least one weight/price combination.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Create price-weight combinations list
+        List<PriceWeightCombination> priceWeightCombinations = new ArrayList<>();
+        for (int i = 0; i < weightList.size(); i++) {
+            priceWeightCombinations.add(new PriceWeightCombination(weightList.get(i), priceList.get(i)));
+        }
+
+        // Save the product
+        saveProductToPreferences(productName, productImagePath, priceWeightCombinations);
+        resetFormFields();
+
+        // Load updated product list
+        loadSavedProducts();
+
+        Toast.makeText(this, "Product added successfully!", Toast.LENGTH_SHORT).show();
     }
 
-    private void addProductToList(String productName, String productPrice) {
-        // Inflate the product item layout
-        CardView productLayout = (CardView) getLayoutInflater().inflate(R.layout.product_item, productListLayout, false);
+    public void saveProductToPreferences(String productName, String productImagePath, List<PriceWeightCombination> priceWeightCombinations) {
+        SharedPreferences preferences = getSharedPreferences("product_prefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
 
-        // Set product image (either the selected image or a placeholder)
-        ImageView productImageView = productLayout.findViewById(R.id.productImageView);
-        if (!productImagePath.isEmpty()) {
-            productImageView.setImageURI(Uri.parse(productImagePath));  // Use the selected image
+        // Retrieve existing products
+        Set<String> productJsonSet = preferences.getStringSet("products_key", new HashSet<>());
+
+        // Create a new Product object
+        Product product = new Product(productName, productImagePath, priceWeightCombinations);
+
+        // Add the new product to the set
+        productJsonSet.add(product.toJson());
+
+        // Save the updated set back to SharedPreferences
+        editor.putStringSet("products_key", productJsonSet);
+        editor.apply();
+    }
+
+    private void loadSavedProducts() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Set<String> productJsonSet = sharedPreferences.getStringSet("products_key", new HashSet<>());
+
+        // Clear the existing list before adding new products
+        productListLayout.removeAllViews();
+
+        if (productJsonSet != null) {
+            for (String productJson : productJsonSet) {
+                Product product = Product.fromJson(productJson);
+                addProductToList(product.getName(), product.getPriceWeightCombinations(), product.getImageUri());
+            }
+        }
+    }
+
+    private void addProductToList(String productName, List<PriceWeightCombination> priceWeightCombinations, String imagePath) {
+        // Inflate the product CardView layout
+        CardView productCard = (CardView) getLayoutInflater().inflate(R.layout.product_item, productListLayout, false);
+
+        ImageView productImageView = productCard.findViewById(R.id.productImageView);
+        TextView productNameView = productCard.findViewById(R.id.productName);
+        LinearLayout weightPriceContainer = productCard.findViewById(R.id.weightPriceContainer);
+        Button removeButton = productCard.findViewById(R.id.removeButton);
+
+        // Set the product image
+        if (imagePath != null && !imagePath.isEmpty()) {
+            productImageView.setImageURI(Uri.parse(imagePath));
         } else {
-            productImageView.setImageResource(R.drawable.ghee); // Placeholder image
+            productImageView.setImageResource(R.drawable.placeholder);
         }
 
-        // Set product name
-        TextView productNameTextView = productLayout.findViewById(R.id.productName);
-        productNameTextView.setText(productName);
+        // Set the product name
+        productNameView.setText(productName);
 
-        // Display weight/price pairs for the product
-        for (int i = 0; i < weightList.size(); i++) {
+        // Add the weight and price combinations
+        for (PriceWeightCombination combo : priceWeightCombinations) {
             LinearLayout weightPriceLayout = new LinearLayout(this);
             weightPriceLayout.setOrientation(LinearLayout.HORIZONTAL);
 
-            TextView weightText = new TextView(this);
-            weightText.setText(weightList.get(i));
+            TextView weightTextView = new TextView(this);
+            weightTextView.setText(combo.getWeight());
+            weightPriceLayout.addView(weightTextView);
 
-            TextView priceText = new TextView(this);
-            priceText.setText(priceList.get(i));
+            TextView priceTextView = new TextView(this);
+            priceTextView.setText(combo.getPrice());
+            weightPriceLayout.addView(priceTextView);
 
-            weightPriceLayout.addView(weightText);
-            weightPriceLayout.addView(priceText);
-
-            productLayout.addView(weightPriceLayout);
+            weightPriceContainer.addView(weightPriceLayout);
         }
 
-        // Remove button functionality
-        Button removeButton = productLayout.findViewById(R.id.removeButton);
+        // Set the remove button functionality
         removeButton.setOnClickListener(v -> {
-            // Call remove method to remove the product from SharedPreferences
             removeProductFromPreferences(productName);
-            productListLayout.removeView(productLayout);
+            productListLayout.removeView(productCard);
         });
 
-        productListLayout.addView(productLayout);  // Add product layout to the product list
+        // Add the product card to the layout
+        productListLayout.addView(productCard);
     }
 
     private void removeProductFromPreferences(String productName) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        editor.remove("product_name");  // Remove all product details
-        editor.remove("product_price");
-        editor.remove("product_image");
-
-        // Remove all weight/price pairs
-        int i = 0;
-        while (sharedPreferences.contains("weight_" + i)) {
-            editor.remove("weight_" + i);
-            editor.remove("price_" + i);
-            i++;
+        Set<String> productJsonSet = sharedPreferences.getStringSet("products_key", new HashSet<>());
+        for (String productJson : productJsonSet) {
+            Product product = Product.fromJson(productJson);
+            if (product.getName().equals(productName)) {
+                productJsonSet.remove(productJson);
+                break;
+            }
         }
 
-        editor.apply();  // Commit the changes to SharedPreferences
+        editor.putStringSet("products_key", productJsonSet);
+        editor.apply();
     }
 
     private void resetFormFields() {
         etProductName.setText("");
-        etProductPrice.setText("");
-        etWeight.setText("");
-        etWeightPrice.setText("");
-        productImage.setImageResource(R.drawable.ghee);  // Reset the image
-        productImagePath = "";  // Reset image path
-        layoutProductInfo.removeAllViews();  // Remove all dynamically added weight/price fields
+        etDefaultWeight.setText("");
+        etDefaultPrice.setText("");
+        layoutProductInfo.removeAllViews();
+        productImage.setImageResource(R.drawable.placeholder);
+        selectedImagePath.setVisibility(View.VISIBLE);
     }
 }
