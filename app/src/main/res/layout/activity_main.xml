@@ -15,7 +15,7 @@
         android:id="@+id/shopLogo"
         android:layout_width="120dp"
         android:layout_height="86dp"
-        android:layout_gravity="left"
+        android:layout_gravity="center"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
         android:src="@drawable/logo" />
