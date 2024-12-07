@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -32,6 +33,9 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 1; // Permission request code for storage
+    private List<Product> allProducts = new ArrayList<>();  // List to hold all products
+    private LinearLayout productListLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,9 +64,34 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(intent, 1); // Start AdminActivity
         });
 
+        // Initialize product list layout
+        productListLayout = findViewById(R.id.productListLayout);
+
+        // Set up SearchView for filtering products
+        SearchView searchView = findViewById(R.id.searchView);
+
+
+        // Clear focus from SearchView initially
+        searchView.clearFocus();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                filterProducts(query);  // Filter when search is submitted
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                filterProducts(newText);  // Filter while typing
+                return false;
+            }
+        });
+
         // Load products from Firebase
         loadProductsFromFirebase();
     }
+
 
     private void checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -90,7 +119,6 @@ public class MainActivity extends AppCompatActivity {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         CollectionReference productsRef = db.collection("Products");
 
-        LinearLayout productListLayout = findViewById(R.id.productListLayout);
         productListLayout.removeAllViews(); // Clear previous entries
 
         productsRef.get()
@@ -122,6 +150,10 @@ public class MainActivity extends AppCompatActivity {
                                 // Convert lists to arrays for spinners
                                 String[] weightsArray = weights.toArray(new String[0]);
                                 String[] pricesArray = prices.toArray(new String[0]);
+
+                                // Add product to the list
+                                Product product = new Product(productName, productImagePath, weightsArray, pricesArray);
+                                allProducts.add(product);  // Store all products for filtering
 
                                 // Add product card to layout
                                 addProductCard(productName, productImagePath, weightsArray, pricesArray);
@@ -195,5 +227,47 @@ public class MainActivity extends AppCompatActivity {
         });
 
         productListLayout.addView(productCard);
+    }
+
+    private void filterProducts(String query) {
+        productListLayout.removeAllViews(); // Clear current displayed products
+
+        // Filter the products based on the query
+        for (Product product : allProducts) {
+            if (product.getName().toLowerCase().contains(query.toLowerCase())) {
+                addProductCard(product.getName(), product.getImagePath(), product.getWeights(), product.getPrices());
+            }
+        }
+    }
+
+    // Product model class
+    public static class Product {
+        private String name;
+        private String imagePath;
+        private String[] weights;
+        private String[] prices;
+
+        public Product(String name, String imagePath, String[] weights, String[] prices) {
+            this.name = name;
+            this.imagePath = imagePath;
+            this.weights = weights;
+            this.prices = prices;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getImagePath() {
+            return imagePath;
+        }
+
+        public String[] getWeights() {
+            return weights;
+        }
+
+        public String[] getPrices() {
+            return prices;
+        }
     }
 }
