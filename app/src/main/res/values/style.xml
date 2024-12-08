@@ -1,0 +1,23 @@
+<resources>
+    <style name="ImageViewShape">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <style name="logoShape">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">25dp</item>
+    </style>
+
+    <style name="CustomSpinnerStyle">
+        <!-- Apply the custom border -->
+        <item name="android:background">@drawable/spinner_border</item>
+
+        <!-- Ensure the dropdown arrow remains visible -->
+        <item name="android:popupBackground">@android:color/white</item>
+        <item name="android:dropDownSelector">@android:color/darker_gray</item>
+
+        <!-- Text color for the spinner -->
+        <item name="android:textColor">@android:color/black</item>
+    </style>
+</resources>

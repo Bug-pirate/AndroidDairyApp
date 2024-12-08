@@ -1,62 +1,90 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#ffffff"
+    android:background="#FFFFFF"
     android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:spacing="16dp">
 
         <!-- Dairy Product Info -->
-        <TextView
-            android:id="@+id/dairyName"
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Unde Patil Dairy"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:background="#FFEB3B"
-            android:padding="16dp"
-            android:textColor="#1E88E5"/><!-- Vibrant blue color -->
+            android:layout_marginBottom="16dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <TextView
-            android:id="@+id/dairyAddress"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Address: Unde Farm Shreerampur"
-            android:textSize="18sp"
-            android:textColor="#1E88E5"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:padding="4dp" />
+                <!-- Dairy Name -->
+                <TextView
+                    android:id="@+id/dairyName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Unde Patil Dairy"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:background="#DDFF5722"
 
-        <!-- Date -->
-        <TextView
-            android:id="@+id/currentDatem"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Date: Auto-generated"
-            android:textStyle="bold"
-            android:textColor="#1E88E5"
-            android:textSize="16sp"
-            android:gravity="center"
-            android:layout_marginTop="8dp"
-            android:padding="4dp" />
+                    android:padding="16dp"
+                    android:textColor="#000000" />
+
+                <!-- Dairy Address -->
+                <TextView
+                    android:id="@+id/dairyAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Address: Unde Farm Shreerampur"
+                    android:textSize="18sp"
+                    android:textColor="#000000"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:padding="4dp" />
+
+                <!-- Date -->
+                <TextView
+                    android:id="@+id/currentDatem"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Date: Auto-generated"
+                    android:textStyle="bold"
+                    android:textColor="#000000"
+                    android:textSize="16sp"
+                    android:gravity="center"
+                    android:layout_marginTop="8dp"
+                    android:padding="4dp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
         <!-- Customer Details -->
-        <EditText
-            android:id="@+id/customerName"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:hint="Customer Name"
-            android:textSize="18sp"
-            android:padding="8dp"
-            android:background="@android:drawable/edit_text" />
+            android:layout_marginTop="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/customerName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:padding="12dp"
+                android:backgroundTint="#1E88E5"
+                android:textColor="#333333" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Scrollable Table for Billing -->
         <HorizontalScrollView
@@ -114,27 +142,46 @@
         </HorizontalScrollView>
 
         <!-- Total amount -->
-        <TextView
-            android:id="@+id/totalAmount"
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Total Amount: 0 INR"
-            android:textSize="18sp"
-            android:gravity="center"
             android:layout_marginTop="16dp"
-            android:padding="8dp"
-            android:background="#F9F9F9" />
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/totalAmount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Total Amount: 0 INR"
+                    android:textSize="18sp"
+                    android:textColor="#333333"
+                    android:gravity="center"
+                    android:background="#F9F9F9" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
         <!-- Print Button -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPrintPDF"
-            android:layout_width="match_parent"
+            android:layout_width="150dp"
+            android:layout_gravity="center"
             android:layout_height="wrap_content"
-            android:text="Print PDF"
             android:layout_marginTop="16dp"
+            android:backgroundTint="#1E88E5"
             android:padding="12dp"
-            android:background="@android:color/holo_blue_light"
+            android:text="Print PDF"
             android:textColor="#ffffff"
-            android:textStyle="bold" />
+            android:textStyle="bold"/>
     </LinearLayout>
-</ScrollView>
+
+</androidx.core.widget.NestedScrollView>
