@@ -1,11 +1,8 @@
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#ffffff"
-    android:padding="16dp"
-    tools:context=".BillingActivity">
+    android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,19 +11,28 @@
 
         <!-- Dairy Product Info -->
         <TextView
+            android:id="@+id/dairyName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Unde Patil Dairy"
-            android:textSize="22sp"
+            android:textSize="28sp"
             android:textStyle="bold"
-            android:gravity="center" />
+            android:gravity="center"
+            android:background="#FFEB3B"
+            android:padding="16dp"
+            android:textColor="#1E88E5"/><!-- Vibrant blue color -->
+
 
         <TextView
+            android:id="@+id/dairyAddress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Unde Farm Shrirampur"
+            android:text="Address: Unde Farm Shreerampur"
             android:textSize="18sp"
-            android:gravity="center" />
+            android:textColor="#1E88E5"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:padding="4dp" />
 
         <!-- Date -->
         <TextView
@@ -34,121 +40,101 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Date: Auto-generated"
-            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#1E88E5"
+            android:textSize="16sp"
             android:gravity="center"
-            android:layout_marginTop="8dp" />
+            android:layout_marginTop="8dp"
+            android:padding="4dp" />
 
         <!-- Customer Details -->
         <EditText
             android:id="@+id/customerName"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:hint="Customer Name"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:padding="8dp"
+            android:background="@android:drawable/edit_text" />
 
-        <!-- Table Header -->
-        <LinearLayout
+        <!-- Scrollable Table for Billing -->
+        <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp">
+
+            <TableLayout
+                android:id="@+id/billingTable"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:stretchColumns="1,2,3,4,5,6">
+
+                <TableRow
+                    android:background="#EEEEEE"
+                    android:padding="8dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sr No"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Product"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Price"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Quantity"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Weight"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="GST"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Total"
+                        android:textStyle="bold" />
+                </TableRow>
+
+            </TableLayout>
+        </HorizontalScrollView>
+
+        <!-- Total amount -->
+        <TextView
+            android:id="@+id/totalAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Total Amount: 0 INR"
+            android:textSize="18sp"
+            android:gravity="center"
             android:layout_marginTop="16dp"
-            android:background="#EEEEEE"
-            android:orientation="horizontal"
-            android:padding="8dp">
+            android:padding="8dp"
+            android:background="#F9F9F9" />
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Sr No"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/productNameView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.5"
-                android:text="Product"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/selectedPriceView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Rate"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/quantityInput"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.5"
-                android:text="Quantity"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/selectedWeightView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.5"
-                android:text="Weight"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.5"
-                android:text="Total"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="GST"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <!-- Dynamic Table Rows -->
-        <LinearLayout
-            android:id="@+id/tableRowsContainer"
-            android:layout_width="match_parent"
-            android:layout_height="290dp"
-            android:orientation="vertical" />
-
-        <!-- Totals Section -->
-        <TextView
-            android:id="@+id/totalBeforeGST"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Total Before GST: 0.00 INR"
-            android:textSize="18sp"
-            android:layout_marginTop="16dp" />
-
-        <TextView
-            android:id="@+id/totalGSTm"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Total GST: 0.00 INR"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/totalAfterGST"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Total After GST: 0.00 INR"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <!-- Button to Print PDF -->
+        <!-- Print Button -->
         <Button
             android:id="@+id/btnPrintPDF"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
+            android:text="Print PDF"
             android:layout_marginTop="16dp"
-            android:text="Print PDF" />
+            android:padding="12dp"
+            android:background="@android:color/holo_blue_light"
+            android:textColor="#ffffff"
+            android:textStyle="bold" />
     </LinearLayout>
 </ScrollView>
