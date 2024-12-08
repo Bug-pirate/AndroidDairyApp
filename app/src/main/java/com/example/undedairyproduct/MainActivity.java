@@ -7,8 +7,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -27,13 +27,15 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 1; // Permission request code for storage
-    private List<Product> allProducts = new ArrayList<>();  // List to hold all products
+    private List<Product> allProducts = new ArrayList<>();// List to hold all products
+    private ArrayList<Map<String, String>> cartItems = new ArrayList<>(); // Stores selected items
     private LinearLayout productListLayout;
 
 
@@ -56,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
 
         btnBilling.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, BillingActivity.class);
+            intent.putExtra("cartItems", cartItems); // Pass cart items to BillingActivity
             startActivity(intent);
         });
 
@@ -217,13 +220,22 @@ public class MainActivity extends AppCompatActivity {
         // Add "Add to Cart" button functionality
         Button addToCartButton = productCard.findViewById(R.id.addToCartButton);
         addToCartButton.setOnClickListener(v -> {
+            String selectedWeight = (String) weightSpinner.getSelectedItem();
+            String selectedPrice = (String) priceSpinner.getSelectedItem();
             // Intent to go to BillingActivity with product details
-            Intent intent = new Intent(MainActivity.this, BillingActivity.class);
-            intent.putExtra("productName", productName);
-            intent.putExtra("productImagePath", productImagePath);
-            intent.putExtra("productWeights", weights);
-            intent.putExtra("productPrices", prices);
-            startActivity(intent);
+            if (selectedWeight != null && selectedPrice != null) {
+                // Add selected product details to cart
+                Map<String, String> cartItem = new HashMap<>();
+                cartItem.put("productName", productName);
+                cartItem.put("productWeight", selectedWeight);
+
+                cartItem.put("productPrice", selectedPrice);
+                cartItems.add(cartItem);
+
+                Toast.makeText(this, "Added to Cart", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Please select weight and price", Toast.LENGTH_SHORT).show();
+            }
         });
 
         productListLayout.addView(productCard);

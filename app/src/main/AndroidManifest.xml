@@ -41,6 +41,8 @@
         <activity android:name=".AdminActivity" android:exported="true" android:windowSoftInputMode="stateHidden"/>
         <activity android:name=".BillingActivity" android:exported="true" />
 
+
+
     </application>
 
 </manifest>

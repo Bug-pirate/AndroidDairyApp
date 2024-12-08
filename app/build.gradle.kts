@@ -63,4 +63,9 @@ dependencies {
     annotationProcessor ("com.github.bumptech.glide:compiler:4.15.1")
 
     implementation ("com.squareup.picasso:picasso:2.8")
+    implementation ("com.itextpdf:itextpdf:5.5.13.3")
+    implementation ("com.itextpdf:itext7-core:7.2.5")
+
+
+
 }
